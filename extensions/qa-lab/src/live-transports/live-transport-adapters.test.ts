@@ -4,12 +4,18 @@ import { createQaBusState } from "../bus-state.js";
 import { createQaChannelTransport } from "../qa-channel-transport.js";
 import { createQaTransportAdapter } from "../qa-transport-registry.js";
 
-const { createSlack, createTelegram, createWhatsApp } = vi.hoisted(() => ({
-  createSlack: vi.fn(),
-  createTelegram: vi.fn(),
-  createWhatsApp: vi.fn(),
-}));
+const { createDiscord, createMatrix, createSlack, createTelegram, createWhatsApp } = vi.hoisted(
+  () => ({
+    createDiscord: vi.fn(),
+    createMatrix: vi.fn(),
+    createSlack: vi.fn(),
+    createTelegram: vi.fn(),
+    createWhatsApp: vi.fn(),
+  }),
+);
 
+vi.mock("./discord/adapter.runtime.js", () => ({ createDiscordQaTransportAdapter: createDiscord }));
+vi.mock("./matrix/adapter.runtime.js", () => ({ createMatrixQaTransportAdapter: createMatrix }));
 vi.mock("./slack/adapter.runtime.js", () => ({ createSlackQaTransportAdapter: createSlack }));
 vi.mock("./telegram/adapter.runtime.js", () => ({
   createTelegramQaTransportAdapter: createTelegram,
@@ -18,24 +24,44 @@ vi.mock("./whatsapp/adapter.runtime.js", () => ({
   createWhatsAppQaTransportAdapter: createWhatsApp,
 }));
 
+import { discordQaCliRegistration } from "./discord/cli.js";
+import { matrixQaCliRegistration } from "./matrix/cli.js";
 import { slackQaCliRegistration } from "./slack/cli.js";
 import { telegramQaCliRegistration } from "./telegram/cli.js";
 import { whatsappQaCliRegistration } from "./whatsapp/cli.js";
 
+const discordQaAdapterFactory = discordQaCliRegistration.adapterFactory;
+const matrixQaAdapterFactory = matrixQaCliRegistration.adapterFactory;
 const slackQaAdapterFactory = slackQaCliRegistration.adapterFactory;
 const telegramQaAdapterFactory = telegramQaCliRegistration.adapterFactory;
 const whatsappQaAdapterFactory = whatsappQaCliRegistration.adapterFactory;
-if (!slackQaAdapterFactory || !telegramQaAdapterFactory || !whatsappQaAdapterFactory) {
+if (
+  !discordQaAdapterFactory ||
+  !matrixQaAdapterFactory ||
+  !slackQaAdapterFactory ||
+  !telegramQaAdapterFactory ||
+  !whatsappQaAdapterFactory
+) {
   throw new Error("expected live transport adapter factories");
 }
 
 const factories = [
   telegramQaAdapterFactory,
+  discordQaAdapterFactory,
+  matrixQaAdapterFactory,
   slackQaAdapterFactory,
   whatsappQaAdapterFactory,
 ] as const;
 
 describe("live transport adapter factories", () => {
+  it("keeps the Discord live defaults focused on non-optional scenarios", () => {
+    expect(discordQaAdapterFactory.scenarioIds).toEqual([
+      "discord-canary",
+      "discord-mention-gating",
+      "discord-native-help-command-registration",
+    ]);
+  });
+
   it("assigns shared thread scenarios to Slack", () => {
     expect(slackQaAdapterFactory.scenarioIds).toEqual([
       "channel-chat-baseline",
@@ -59,6 +85,8 @@ describe("live transport adapter factories", () => {
   });
 
   it.each([
+    ["discord", createDiscord],
+    ["matrix", createMatrix],
     ["telegram", createTelegram],
     ["slack", createSlack],
     ["whatsapp", createWhatsApp],
