@@ -43,6 +43,20 @@ const LIVE_TRANSPORT_COVERAGE_LANES: readonly LiveTransportCoverageLane[] = [
     ],
   },
   {
+    transportId: "matrix",
+    commandName: "matrix",
+    members: [
+      { standardId: "canary", scenarioId: "channel-chat-baseline" },
+      { standardId: "mention-gating", scenarioId: "channel-mention-gating" },
+      { standardId: "allowlist-block", scenarioId: "channel-sender-allowlist" },
+      { standardId: "top-level-reply-shape", scenarioId: "channel-top-level-reply-shape" },
+      { standardId: "restart-resume", scenarioId: "matrix-restart-resume" },
+      { standardId: "thread-follow-up", scenarioId: "thread-follow-up" },
+      { standardId: "thread-isolation", scenarioId: "thread-isolation" },
+      { standardId: "reaction-observation", scenarioId: "matrix-reaction-notification" },
+    ],
+  },
+  {
     transportId: "slack",
     commandName: "slack",
     members: [
@@ -51,6 +65,8 @@ const LIVE_TRANSPORT_COVERAGE_LANES: readonly LiveTransportCoverageLane[] = [
       { standardId: "allowlist-block", scenarioId: "slack-allowlist-block" },
       { standardId: "top-level-reply-shape", scenarioId: "slack-top-level-reply-shape" },
       { standardId: "restart-resume", scenarioId: "slack-restart-resume" },
+      { standardId: "thread-follow-up", scenarioId: "thread-follow-up" },
+      { standardId: "thread-isolation", scenarioId: "thread-isolation" },
     ],
   },
   {

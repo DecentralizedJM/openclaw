@@ -167,10 +167,30 @@ describe("qa coverage report", () => {
     expect(inventory.missingCoverage).toStrictEqual([]);
     expect(inventory.liveTransportLanes.map((lane) => lane.transportId)).toEqual([
       "discord",
+      "matrix",
       "slack",
       "telegram",
       "whatsapp",
     ]);
+    expect(
+      inventory.liveTransportLanes.find((lane) => lane.transportId === "matrix"),
+    ).toMatchObject({
+      baselineMissingStandardScenarioIds: [],
+      commandName: "matrix",
+      members: expect.arrayContaining([
+        { standardId: "canary", scenarioId: "channel-chat-baseline" },
+        { standardId: "restart-resume", scenarioId: "matrix-restart-resume" },
+        { standardId: "reaction-observation", scenarioId: "matrix-reaction-notification" },
+      ]),
+    });
+    expect(
+      inventory.liveTransportLanes.find((lane) => lane.transportId === "slack")?.members,
+    ).toEqual(
+      expect.arrayContaining([
+        { standardId: "thread-follow-up", scenarioId: "thread-follow-up" },
+        { standardId: "thread-isolation", scenarioId: "thread-isolation" },
+      ]),
+    );
     expect(inventory.scorecardTaxonomy.profileCount).toBe(3);
     expect(
       inventory.scorecardTaxonomy.profiles.find((profile) => profile.id === "smoke-ci"),

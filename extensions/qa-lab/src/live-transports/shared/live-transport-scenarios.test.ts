@@ -6,6 +6,7 @@ import {
   findMissingLiveTransportStandardScenarios,
 } from "openclaw/plugin-sdk/qa-live-transport-scenarios";
 import { describe, expect, it } from "vitest";
+import { readQaScenarioPack } from "../../scenario-catalog.js";
 import {
   buildLiveTransportCoverageLaneSummaries,
   collectLiveTransportStandardScenarioCoverage,
@@ -95,6 +96,7 @@ describe("live transport scenario helpers", () => {
 
     expect(lanes.map((lane) => lane.transportId)).toEqual([
       "discord",
+      "matrix",
       "slack",
       "telegram",
       "whatsapp",
@@ -106,6 +108,14 @@ describe("live transport scenario helpers", () => {
     expect(lanes.find((lane) => lane.transportId === "slack")?.members).toContainEqual({
       standardId: "restart-resume",
       scenarioId: "slack-restart-resume",
+    });
+    expect(lanes.find((lane) => lane.transportId === "slack")?.members).toContainEqual({
+      standardId: "thread-follow-up",
+      scenarioId: "thread-follow-up",
+    });
+    expect(lanes.find((lane) => lane.transportId === "matrix")?.members).toContainEqual({
+      standardId: "reaction-observation",
+      scenarioId: "matrix-reaction-notification",
     });
     expect(lanes.find((lane) => lane.transportId === "whatsapp")?.members).toContainEqual({
       standardId: "allowlist-block",
@@ -121,6 +131,22 @@ describe("live transport scenario helpers", () => {
     expect(
       lanes.find((lane) => lane.transportId === "whatsapp")?.baselineMissingStandardScenarioIds,
     ).toEqual([]);
+    expect(
+      lanes.find((lane) => lane.transportId === "matrix")?.baselineMissingStandardScenarioIds,
+    ).toEqual([]);
+  });
+
+  it("keeps every coverage member backed by a canonical YAML scenario", () => {
+    const scenarioIds = new Set(readQaScenarioPack().scenarios.map((scenario) => scenario.id));
+
+    for (const lane of buildLiveTransportCoverageLaneSummaries()) {
+      for (const member of lane.members) {
+        expect(
+          scenarioIds.has(member.scenarioId ?? ""),
+          `${lane.transportId}:${member.standardId}`,
+        ).toBe(true);
+      }
+    }
   });
 
   it("keeps Telegram runtime coverage represented in its mixed-owner lane", () => {
